@@ -1,0 +1,91 @@
+<title>添加单车</title>
+</head>
+<body>
+	<article class="page-container">
+		<form action="/bike" method="post" class="form form-horizontal"
+			id="form-bike-add">
+			<div class="row cl">
+				<label class="form-label col-xs-4 col-sm-2"><span
+					class="c-red">*</span>状态：</label>
+				<div class="formControls col-xs-8 col-sm-9">
+					<span class="select-box"> <select class="select" size="1"
+						name="status" id="status">
+							<option value="0" selected>正常</option>
+							<option value="1">使用</option>
+							<option value="2">报修</option>
+					</select>
+					</span>
+				</div>
+			</div>
+			<div class="row cl">
+				<label class="form-label col-xs-4 col-sm-2"><span
+					class="c-red">*</span>纬度：</label>
+				<div class="formControls col-xs-8 col-sm-9">
+					<input type="text" class="input-text" value="" placeholder=""
+						id="latitude" name="latitude">
+				</div>
+			</div>
+			<div class="row cl">
+				<label class="form-label col-xs-4 col-sm-2"><span
+					class="c-red">*</span>经度：</label>
+				<div class="formControls col-xs-8 col-sm-9">
+					<input type="text" class="input-text" value="" placeholder=""
+						id="longitude" name="longitude">
+				</div>
+			</div>
+			<div class="row cl">
+				<label class="form-label col-xs-4 col-sm-2">附件：</label>
+				<div class="formControls col-xs-8 col-sm-9">
+					<span class="btn-upload form-group"> <input
+						class="input-text upload-url" type="text" name="uploadfile"
+						id="uploadfile" readonly nullmsg="请添加附件！" style="width: 200px">
+						<a href="javascript:void();"
+						class="btn btn-primary radius upload-btn"><i
+							class="Hui-iconfont">&#xe642;</i> 浏览文件</a> <input type="file"
+						multiple name="file-2" class="input-file">
+					</span>
+				</div>
+			</div>
+			<div class="row cl">
+				<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">
+					<input class="btn btn-primary radius" type="button"
+						value="&nbsp;&nbsp;提交&nbsp;&nbsp;" onclick="addBike()">
+				</div>
+			</div>
+		</form>
+	</article>
+
+	<script type="text/javascript"
+		src="../../static/lib/jquery/1.9.1/jquery.min.js"></script>
+	<script type="text/javascript"
+		src="../../static/lib/layer/2.4/layer.js"></script>
+	<script type="text/javascript" src="../../static/h-ui/js/H-ui.min.js"></script>
+	<script type="text/javascript"
+		src="../../static/h-ui.admin/js/H-ui.admin.js"></script>
+	<script type="text/javascript"
+		src="../../static/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+	<script type="text/javascript"
+		src="../../static/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+	<script type="text/javascript"
+		src="../../static/lib/laypage/1.2/laypage.js"></script>
+	<script type="text/javascript" src="../../static/lib/vue/vue.js"></script>
+	<script type="text/javascript" src="../../static/lib/vue/axios.js"></script>
+	<script type="text/javascript" src="../../static/scripts/bike/add.js"></script>
+	<script type="text/javascript" src="../../static/lib/vue/vue.js"></script>
+	<script type="text/javascript" src="../../static/lib/vue/axios.js"></script>
+	<script>
+function addBike(){
+ var status=$("#status").val();
+ var latitude=$("#latitude").val();
+ var longitude=$("#longitude").val();
+ $.post("../../back/addBike",{status:status,latitude:latitude,longitude:longitude},function(data){
+	 if(data.code==1){
+		 alert('添加成功');
+	 }else{
+		 alert('添加失败');
+	 }
+ })
+}
+	</script>@charset "utf-8";
+/* 你自己的样式 */
+
