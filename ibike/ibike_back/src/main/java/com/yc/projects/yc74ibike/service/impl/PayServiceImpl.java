@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.yc.projects.yc74ibike.bean.Bike;
 import com.yc.projects.yc74ibike.bean.PayModel;
 import com.yc.projects.yc74ibike.bean.User;
+import com.yc.projects.yc74ibike.dao.UserDao;
 import com.yc.projects.yc74ibike.service.BikeService;
 import com.yc.projects.yc74ibike.service.LogService;
 import com.yc.projects.yc74ibike.service.PayService;
@@ -31,6 +32,8 @@ public class PayServiceImpl implements PayService {
 	private LogService LogService;
 	@Autowired
 	private MongoTemplate mongoTemplate;
+	@Autowired
+	private UserDao userDao;
 
 	private Logger logger = LogManager.getLogger();
 
@@ -59,13 +62,21 @@ public class PayServiceImpl implements PayService {
 		u.set("loc", loc).set("status", 1);
 		mongoTemplate.updateFirst(q, u, Bike.class, "bike");
 		// 4. 修改用户态: status , balance-花费.
-		Query qu = new Query(Criteria.where("phoneNum").is(payModel.getPhoneNum()));
-		User user = mongoTemplate.findOne(qu, User.class, "user");
-		System.out.println(user);
-		Update uu = new Update().set("status", 3); // 用户的状态: 0 没有注册 1. 注册电话成功 2 押金缴纳成功 3. 实名认证,可以开锁 4. 骑行态.
-
-		uu.set("balance", user.getBalance() - payMoney);
-		mongoTemplate.updateFirst(qu, uu, User.class, "user");
+		/*
+		 * Query qu = new Query(Criteria.where("phoneNum").is(payModel.getPhoneNum()));
+		 * User user = mongoTemplate.findOne(qu, User.class, "user");
+		 * System.out.println(user); Update uu = new Update().set("status", 3); //
+		 * 用户的状态: 0 没有注册 1. 注册电话成功 2 押金缴纳成功 3. 实名认证,可以开锁 4. 骑行态.
+		 * 
+		 * uu.set("balance", user.getBalance() - payMoney);
+		 * mongoTemplate.updateFirst(qu, uu, User.class, "user");
+		 */
+		User user = new User();
+		user.setPhoneNum(payModel.getPhoneNum());
+		user = userDao.findUser(user).get(0);
+		user.setStatus(3);
+		user.setBalance(user.getBalance() - payMoney);
+		userDao.updateUser(user);
 		LogService.saveRideLog(payModel);
 		logger.info("结账成功");
 	}

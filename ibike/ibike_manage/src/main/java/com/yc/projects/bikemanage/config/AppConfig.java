@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -98,8 +99,8 @@ public class AppConfig {
 		// return new MongoClient("192.168.0.200", 27017);
 	}
 
-	@Bean
-	public DriverManagerDataSource dataSource() {
+	@Bean(name = "jdbchive")
+	public DriverManagerDataSource hiveDataSource() {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
 		dataSource.setDriverClassName("org.apache.hive.jdbc.HiveDriver");
 		dataSource.setUrl("jdbc:hive2://node3:10000/yc74ibike");
@@ -107,13 +108,22 @@ public class AppConfig {
 		dataSource.setPassword("");
 		return dataSource;
 	}
-
+	
+	@Bean(name = "jdbcmysql")
+	public DriverManagerDataSource mysqlDataSource() {
+		DriverManagerDataSource dataSource = new DriverManagerDataSource();
+		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+		dataSource.setUrl("jdbc:mysql://node1:3306/ibike?serverTimezone=UTC");
+		dataSource.setUsername("root");
+		dataSource.setPassword("a");
+		return dataSource;
+	}
+	
 	@Bean
 	@Autowired
-	public DataSourceTransactionManager tx(DriverManagerDataSource ds) {
+	public DataSourceTransactionManager tx(	@Qualifier(value = "jdbcmysql") DriverManagerDataSource ds) {
 		DataSourceTransactionManager dtm = new DataSourceTransactionManager();
 		dtm.setDataSource(ds);
 		return dtm;
 	}
-
 }

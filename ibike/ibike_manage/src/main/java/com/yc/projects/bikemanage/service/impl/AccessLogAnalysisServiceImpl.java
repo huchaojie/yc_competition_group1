@@ -24,10 +24,8 @@ public class AccessLogAnalysisServiceImpl implements AccessLogAnalysisService {
 	@Override
 	public Map<String, Object> findAllAccessLog(int pageNum, int pageSize) {
 		List<AccessLog> list = accessLogAnalysisDao.findAccessLog(pageNum, pageSize);
-		System.out.println(list);
 		List<QueryObject> count = accessLogAnalysisDao.findCount(null);
 		long total = count.get(0).getCount();
-		System.out.println(total);
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("total", total);
 		map.put("list", list);

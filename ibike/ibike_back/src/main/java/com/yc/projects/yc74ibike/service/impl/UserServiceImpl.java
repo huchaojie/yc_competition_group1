@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.gson.Gson;
 import com.mongodb.client.result.UpdateResult;
 import com.yc.projects.yc74ibike.bean.User;
+import com.yc.projects.yc74ibike.dao.UserDao;
 import com.yc.projects.yc74ibike.service.UserService;
 
 @Transactional
@@ -31,6 +32,9 @@ public class UserServiceImpl implements UserService {
 	private RedisTemplate redisTemplate;
 	@Autowired
 	MongoTemplate mongoTemplate;
+
+	@Autowired
+	UserDao userDao;
 
 	// 操作redis中的字符串类型数据
 	@Autowired
@@ -48,58 +52,75 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public boolean verify(User user) {
-		boolean flag = false;
+//		boolean flag = false;
 		String phoneNum = user.getPhoneNum();
 		String verifyCode = user.getVerifyCode();
 		String code = stringRedisTemplate.opsForValue().get(phoneNum);
-		String openId = user.getOpenId();
-		String uuid = user.getUuid();
-		 System.out.println(user);
+//		String openId = user.getOpenId();
+//		String uuid = user.getUuid();
 		if (verifyCode != null && verifyCode.equals(code)) {
-			int status = 1;
-			UpdateResult result = mongoTemplate.updateFirst(new Query(Criteria.where("openId").is(openId)),
-					new Update().set("status", status).set("phoneNum", phoneNum), User.class);
-			if (result.getModifiedCount() == 1) {
-				return true;
-			} else {
-				return false;
-			}
+			user.setStatus(1);
+			user.setPhoneNum(phoneNum);
+			/*
+			 * UpdateResult result = mongoTemplate.updateFirst(new
+			 * Query(Criteria.where("openId").is(openId)), new Update().set("status",
+			 * status).set("phoneNum", phoneNum), User.class); if (result.getModifiedCount()
+			 * == 1) { return true; } else { return false; }
+			 */
+			return userDao.updateUser(user);
 		}
-		return flag;
+		return false;
+
 	}
 
 	@Override
 	public boolean deposit(User user) {
-		int status = 2;
-		int money = 299;
-		UpdateResult result = mongoTemplate.updateFirst(new Query(Criteria.where("phoneNum").is(user.getPhoneNum())),
-				new Update().set("status", status).set("deposit", money), User.class);
-		if (result.getModifiedCount() == 1) {
-			return true;
-		}
-		return false;
+		/*
+		 * int status = 2; int money = 299; UpdateResult result =
+		 * mongoTemplate.updateFirst(new
+		 * Query(Criteria.where("phoneNum").is(user.getPhoneNum())), new
+		 * Update().set("status", status).set("deposit", money), User.class); if
+		 * (result.getModifiedCount() == 1) { return true; }
+		 */
+		user = userDao.findUser(user).get(0);
+		user.setDeposit(299.0);
+		user.setStatus(2);
+		return userDao.updateUser(user);
 	}
 
 	@Override
 	public boolean identity(User user) {
 		// TODO:调用第三方实名认证接口
-		int status = 3;
-		UpdateResult result = mongoTemplate.updateFirst(new Query(Criteria.where("phoneNum").is(user.getPhoneNum())),
-				new Update().set("status", status).set("name", user.getName()).set("idNum", user.getIdNum()),
-				User.class);
-		if (result.getModifiedCount() == 1) {
-			return true;
-		}
-		return false;
+		/*
+		 * int status = 3; UpdateResult result = mongoTemplate.updateFirst(new
+		 * Query(Criteria.where("phoneNum").is(user.getPhoneNum())), new
+		 * Update().set("status", status).set("name", user.getName()).set("idNum",
+		 * user.getIdNum()), User.class); if (result.getModifiedCount() == 1) { return
+		 * true; } return false;
+		 */
+		User u = new User();
+		u.setPhoneNum(user.getPhoneNum());
+		u = userDao.findUser(u).get(0);
+		u.setIdNum(user.getIdNum());
+		u.setName(user.getName());
+		u.setStatus(3);
+		return userDao.updateUser(u);
 	}
 
 	@Override
 	public boolean recharge(double balance, String phoneNum) {
-		boolean flag = true;
+		boolean flag;
 		try {
-			UpdateResult result = mongoTemplate.updateFirst(new Query(Criteria.where("phoneNum").is(phoneNum)),
-					new Update().inc("balance", balance), User.class);
-			System.out.println(result.getModifiedCount());
+			/*
+			 * UpdateResult result = mongoTemplate.updateFirst(new
+			 * Query(Criteria.where("phoneNum").is(phoneNum)), new Update().inc("balance",
+			 * balance), User.class); System.out.println(result.getModifiedCount());
+			 */
+			User user = new User();
+			user.setPhoneNum(phoneNum);
+			user = userDao.findUser(user).get(0);
+			user.setBalance(user.getBalance() + balance);
+			flag = userDao.updateUser(user);
 		} catch (Exception e) {
 			e.printStackTrace();
 			flag = false;
@@ -109,13 +130,17 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public List<User> selectMember(String openid) {
-		Query q = new Query(Criteria.where("openId").is(openid));
-		return this.mongoTemplate.find(q, User.class, "user");
+		// Query q = new Query(Criteria.where("openId").is(openid));
+		// return this.mongoTemplate.find(q, User.class, "user");
+		User user = new User();
+		user.setOpenId(openid);
+		return userDao.findUser(user);
 	}
 
 	@Override
-	public void addMember(User u) {
-		mongoTemplate.insert(u);
+	public void addMember(User user) {
+		// mongoTemplate.insert(user);
+		userDao.addUser(user);
 	}
 
 	@Override
