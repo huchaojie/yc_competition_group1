@@ -1,0 +1,20 @@
+server:  
+    port: 8201
+    servlet: 
+       session.timeout: 60000 
+       contextpath: /bikemanage
+    undertow:  
+        io-threads: 16  
+        worker-threads: 256  
+        buffer-size: 1024  
+        buffers-per-region: 1024  
+        direct-buffers: true 
+        
+logging:
+    level: 
+        root: info
+        org.springframework: info
+        com.yc: info
+    file: D://logs/yc.log
+swagger: 
+    enabled: true

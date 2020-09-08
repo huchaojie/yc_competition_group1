@@ -62,6 +62,13 @@ public class AppTest extends TestCase {
 	private AccessLogAnalysisService accessLogAnalysisService;
 
 	@Test
+	public void testAddAdmin() {
+		Admin admin=new Admin();
+		admin.setName("肖理达");
+		admin.setPassword("123456");
+		adminManageService.addAdmin(admin);
+	}
+	@Test
 	public void testFindPVUV() {
 		String[] pvuv = accessLogAnalysisService.findPVUV();
 		String string = Arrays.deepToString(pvuv);

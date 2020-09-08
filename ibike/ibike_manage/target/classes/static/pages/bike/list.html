@@ -1,0 +1,243 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="renderer" content="webkit|ie-comp|ie-stand" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport"
+	content="width=device-width,initial-scale=1,minimum-scale=1.0,maximum-scale=1.0,bike-scalable=no" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+<link rel="Bookmark" href="/favicon.ico" />
+<link rel="Shortcut Icon" href="/favicon.ico" />
+<link rel="stylesheet" type="text/css"
+	href="../../static/h-ui/css/H-ui.min.css" />
+<link rel="stylesheet" type="text/css"
+	href="../../static/h-ui.admin/css/H-ui.admin.css" />
+<link rel="stylesheet" type="text/css"
+	href="../../static/lib/Hui-iconfont/1.0.8/iconfont.css" />
+<link rel="stylesheet" type="text/css"
+	href="../../static/h-ui.admin/skin/default/skin.css" id="skin" />
+<link rel="stylesheet" type="text/css"
+	href="../../static/h-ui.admin/css/style.css" />
+</head>
+<body>
+	<nav class="breadcrumb">
+		<i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span>
+		单车管理 <span class="c-gray en">&gt;</span> 单车列表 <a
+			class="btn btn-success radius r"
+			style="line-height: 1.6em; margin-top: 3px"
+			href="javascript:location.replace(location.href);" title="刷新"><i
+			class="Hui-iconfont">&#xe68f;</i></a>
+	</nav>
+	<div class="page-container">
+		<div id="app_list">
+			<div class="mt-20">
+				<div class="row cl">
+					<label class="form-label col-xs-4 col-sm-2"><span
+						class="c-red">*</span>编号：</label>
+					<div class="formControls col-xs-8 col-sm-9" style="width: 30%;">
+						<input type="text" class="input-text" value="" placeholder=""
+							id="id" name="id">
+					</div>
+					<label class="form-label col-xs-4 col-sm-2"><span
+						class="c-red">*</span>状态：</label>
+					<div class="formControls col-xs-8 col-sm-9" style="width: 30%;">
+						<span class="select-box"> <select class="select" size="1"
+							name="status" id="status">
+								<option value="1" selected>正常</option>
+								<option value="2">使用</option>
+								<option value="3">报修</option>
+						</select>
+						</span>
+					</div>
+				</div>
+				<div class="row cl">
+					<label class="form-label col-xs-4 col-sm-2"><span
+						class="c-red">*</span>每页条数：</label>
+					<div class="formControls col-xs-8 col-sm-9" style="width: 30%;">
+						<span class="select-box"> <select class="select" size="1"
+							name="pageSize" id="pageSize">
+								<option value="10" selected>10</option>
+								<option value="20">20</option>
+								<option value="50">50</option>
+						</select>
+						</span>
+					</div>
+				</div>
+				<div class="row cl">
+					<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">
+						<input class="btn btn-primary radius" type="button" value="查询"
+							@click="searchBike()">
+					</div>
+				</div>
+				<form id="table-form">
+					<table
+						class="table table-border table-bordered table-bg table-hover table-sort"
+						width="100%">
+						<thead>
+							<tr class="text-c">
+								<th width="150">编号</th>
+								<th>状态</th>
+								<th>纬度</th>
+								<th>经度</th>
+								<th width="150">操作</th>
+							</tr>
+							<tr v-for="r in rows">
+								<td>{{r.id}}</td>
+								<td>{{r.status}}</td>
+								<td>{{r.loc[0]}}</td>
+								<td>{{r.loc[1]}}</td>
+								<td><a href="javascript:void(0)"
+									@click="upBike(r.id,r.status,r.loc[0],r.loc[1])">修改</a> <a
+									href="javascript:void(0)" @click="deleteBike(r.id)">删除</a></td>
+							</tr>
+						</thead>
+						<tbody>
+
+						</tbody>
+					</table>
+				</form>
+				<div class="row cl">
+					<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">
+						<input class="btn btn-primary radius" type="button" value="上一页"
+							@click="pageUp()"> <input class="btn btn-primary radius"
+							type="button" value="下一页" @click="pageDown()"> <label>总条数：{{total}}</label>
+						<label>当前第：{{pageNum}}页</label>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript"
+		src="../../static/lib/jquery/1.9.1/jquery.min.js"></script>
+	<script type="text/javascript"
+		src="../../static/lib/layer/2.4/layer.js"></script>
+	<script type="text/javascript" src="../../static/h-ui/js/H-ui.min.js"></script>
+	<script type="text/javascript"
+		src="../../static/h-ui.admin/js/H-ui.admin.js"></script>
+	<script type="text/javascript"
+		src="../../static/lib/My97DatePicker/4.8/WdatePicker.js"></script>
+	<script type="text/javascript"
+		src="../../static/lib/datatables/1.10.0/jquery.dataTables.min.js"></script>
+	<script type="text/javascript"
+		src="../../static/lib/laypage/1.2/laypage.js"></script>
+	<script type="text/javascript" src="../../static/lib/vue/vue.js"></script>
+	<script type="text/javascript" src="../../static/lib/vue/axios.js"></script>
+	<script type="text/javascript"
+		src="../../static/lib/jquery/jquery.cookie.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			var name = $.cookie("adminName");
+			$.post("../../back/checkLogin", {
+				name : name
+			}, function(data) {
+				if (data.code != 1) {
+					location.replace("../login.html");
+				}
+			})
+		});
+
+		let vm = new Vue({
+			el : "#app_list",
+			data : {
+				rows : [],
+				pageNum : 1,
+				total : 0,
+			},
+			methods : {
+
+				deleteBike : function(id) {
+					$.post("../../back/deleteBike", {
+						bid : id
+					}, function(data) {
+						if (data.code == 1) {
+							alert('删除成功');
+							location.replace(location.href);
+						} else {
+							alert('删除失败!' + data.msg);
+						}
+					})
+				},
+				pageUp : function() {
+					if (vm.pageNum > 1) {
+						this.pageNum = this.pageNum - 1;
+						this.searchBike(this.pageNum);
+					}
+				},
+				pageDown : function() {
+					var pages = 0;
+
+					var pageSize = $("#pageSize").val();
+					pages = Math.ceil(this.total / pageSize);
+					if (this.pageNum < pages) {
+						this.pageNum = this.pageNum + 1;
+						this.searchBike(this.pageNum);
+					}
+				},
+				searchBike : function(pageNum) {
+					if (pageNum == null || pageNum == undefined) {
+						pageNum = 1;
+						this.pageNum = 1;
+					}
+					var id = $("#id").val();
+					var status = $("#status").val();
+					var pageSize = $("#pageSize").val();
+					$.post("../../back/searchBike", {
+						bid : id,
+						status : status,
+						pageNum : pageNum,
+						pageSize : pageSize
+					}, function(data) {
+						vm.rows.splice(0);
+						if (data.code == 1) {
+							for (var i = 0; i < data.obj.length; i++) {
+								Vue.set(vm.rows, i, data.obj[i]);
+							}
+							if (data.msg != null && data.msg != "") {
+								vm.total = parseInt(data.msg);
+							}
+						} else {
+							alert("查询失败！" + data.msg);
+						}
+					});
+				},
+
+				upBike : function(bid, bstatus, latitude, longitude) {
+					$.cookie('bid', bid, {
+						path : '/'
+					});
+					$.cookie('bstatus', bstatus, {
+						path : '/'
+					});
+					$.cookie('latitude', latitude, {
+						path : '/'
+					});
+					$.cookie('longitude', longitude, {
+						path : '/'
+					});
+					window.location.href = "edit.html";
+				}
+			}
+		});
+
+		$(function() {
+			$.post("../../back/searchBike", {
+				pageNum : 1,
+				pageSize : 10,
+				status : 1
+			}, function(data) {
+				vm.rows.splice(0);
+				for (var i = 0; i < data.obj.length; i++) {
+					Vue.set(vm.rows, i, data.obj[i]);
+				}
+				if (data.msg != null && data.msg != "") {
+					vm.total = parseInt(data.msg);
+				} else {
+					alert("查询失败!" + data.msg);
+				}
+			});
+		})
+	</script>
+</body>
+</html>
